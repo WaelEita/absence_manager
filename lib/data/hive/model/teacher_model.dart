@@ -1,5 +1,5 @@
+import 'package:absence_manager/data/hive/model/student_model.dart';
 import 'package:hive/hive.dart';
-import 'student_model.dart';
 
 @HiveType(typeId: 0)
 class Teacher extends HiveObject {

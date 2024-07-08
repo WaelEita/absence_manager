@@ -1,6 +1,6 @@
-import 'package:absence_manager/data/hive/student_model.dart';
+import 'package:absence_manager/data/hive/model/student_model.dart';
 import 'package:hive/hive.dart';
-import 'teacher_model.dart';
+import '../model/teacher_model.dart';
 
 class TeacherAdapter extends TypeAdapter<Teacher> {
   @override

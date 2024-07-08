@@ -33,8 +33,8 @@ class RemoveDialog<T> extends StatelessWidget {
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: Text('إلغاء',
-              style: regularText18.copyWith(color: Colors.black)),
+          child:
+              Text('إلغاء', style: regularText18.copyWith(color: Colors.black)),
         ),
         TextButton(
           onPressed: () {

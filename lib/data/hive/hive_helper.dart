@@ -1,9 +1,9 @@
-import 'package:absence_manager/data/hive/student_adapter.dart';
+import 'package:absence_manager/data/hive/adapter/student_adapter.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
-import 'teacher_model.dart';
-import 'teacher_adapter.dart';
-import 'student_model.dart';
+import 'model/teacher_model.dart';
+import 'adapter/teacher_adapter.dart';
+import 'model/student_model.dart';
 
 class HiveHelper {
   static bool _isInitialized = false;

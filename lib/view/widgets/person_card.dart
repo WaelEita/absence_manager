@@ -1,4 +1,3 @@
-import 'package:absence_manager/view/widgets/remove_dialog.dart';
 import 'package:flutter/material.dart';
 import '../../utils/colors.dart';
 import '../../utils/text_styles.dart';
@@ -8,6 +7,8 @@ class PersonCard<T> extends StatelessWidget {
   final String title;
   final Function(T) onRemove;
   final Function(T)? onTap;
+  final Function()? onLongPress;
+  final bool isSelected;
 
   const PersonCard({
     super.key,
@@ -15,6 +16,8 @@ class PersonCard<T> extends StatelessWidget {
     required this.title,
     required this.onRemove,
     this.onTap,
+    this.onLongPress,
+    this.isSelected = false,
   });
 
   @override
@@ -26,11 +29,12 @@ class PersonCard<T> extends StatelessWidget {
       elevation: 4,
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
-        leading: IconButton(
-          icon:
-              const Icon(Icons.remove_circle_outline_sharp, color: Colors.red),
-          onPressed: () => _showRemoveConfirmation(context),
-        ),
+        leading: isSelected
+            ? Icon(
+          Icons.check_circle,
+          color: primaryColor,
+        )
+            : null,
         trailing: const Icon(Icons.person, color: primaryColor),
         title: SizedBox(
           width: MediaQuery.of(context).size.width * .7,
@@ -45,21 +49,8 @@ class PersonCard<T> extends StatelessWidget {
         tileColor: secondaryColor,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         onTap: onTap != null ? () => onTap!(person) : null,
+        onLongPress: onLongPress,
       ),
-    );
-  }
-
-  void _showRemoveConfirmation(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return RemoveDialog<T>(
-          person: person,
-          title: 'تأكيد الحذف',
-          content: 'هل أنت متأكد أنك تريد حذف هذا العنصر؟',
-          onRemove: onRemove,
-        );
-      },
     );
   }
 }

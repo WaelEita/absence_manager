@@ -1,4 +1,4 @@
-import 'package:absence_manager/data/hive/student_model.dart';
+import 'package:absence_manager/data/hive/model/student_model.dart';
 import 'package:hive/hive.dart';
 
 class StudentAdapter extends TypeAdapter<Student> {
