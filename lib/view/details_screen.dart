@@ -19,15 +19,17 @@ class DetailsScreen extends StatefulWidget {
 
 class _DetailsScreenState extends State<DetailsScreen> {
   Box<Teacher>? teacherBox;
+  Box<Student>? studentBox;
 
   @override
   void initState() {
     super.initState();
-    openTeacherBox();
+    openBoxes();
   }
 
-  Future<void> openTeacherBox() async {
+  Future<void> openBoxes() async {
     teacherBox = await HiveHelper.openTeacherBox();
+    studentBox = await HiveHelper.openStudentBox();
     setState(() {});
   }
 
@@ -40,29 +42,29 @@ class _DetailsScreenState extends State<DetailsScreen> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: teacherBox == null
+          child: teacherBox == null || studentBox == null
               ? const Center(
-                  child: CircularProgressIndicator(
-                  color: primaryColor,
-                ))
+              child: CircularProgressIndicator(
+                color: primaryColor,
+              ))
               : ValueListenableBuilder<Box<Teacher>>(
-                  valueListenable: teacherBox!.listenable(),
-                  builder: (context, box, _) {
-                    final teacher = box.get(widget.teacher.key);
-                    final students = teacher?.students ?? [];
-                    return ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: students.length,
-                      itemBuilder: (context, index) {
-                        return PersonCard<Student>(
-                          person: students[index],
-                          title: students[index].name,
-                          onRemove: _removeStudent,
-                        );
-                      },
-                    );
-                  },
-                ),
+            valueListenable: teacherBox!.listenable(),
+            builder: (context, box, _) {
+              final teacher = box.get(widget.teacher.key);
+              final students = teacher?.students ?? [];
+              return ListView.builder(
+                physics: const BouncingScrollPhysics(),
+                itemCount: students.length,
+                itemBuilder: (context, index) {
+                  return PersonCard<Student>(
+                    person: students[index],
+                    title: students[index].name,
+                    onRemove: _removeStudent,
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -86,7 +88,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
           title: 'إضافة طالب جديد',
           hintText: 'اسم الطالب',
           existingNames:
-              widget.teacher.students.map((student) => student.name).toList(),
+          widget.teacher.students.map((student) => student.name).toList(),
           onAdded: (newStudentName) {
             _addStudent(newStudentName);
           },
@@ -100,9 +102,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
       final teacher = teacherBox!.get(widget.teacher.key);
       if (teacher != null) {
         final exists =
-            teacher.students.any((student) => student.name == newStudentName);
+        teacher.students.any((student) => student.name == newStudentName);
         if (!exists) {
           final newStudent = Student(newStudentName);
+          studentBox!.add(newStudent); // Add student to the student box
           teacher.students.add(newStudent);
           teacher.save();
           setState(() {});
@@ -118,12 +121,12 @@ class _DetailsScreenState extends State<DetailsScreen> {
   }
 
   void _removeStudent(Student student) {
-    if (teacherBox != null) {
+    if (teacherBox != null && studentBox != null) {
       final teacher = teacherBox!.get(widget.teacher.key);
       if (teacher != null) {
         teacher.students.remove(student);
         teacher.save();
-        student.delete();
+        studentBox!.delete(student.key);
         setState(() {});
       }
     }
