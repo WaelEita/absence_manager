@@ -6,6 +6,7 @@ import '../../utils/colors.dart';
 import '../../utils/text_styles.dart';
 import '../widgets/add_dialog.dart';
 import '../widgets/person_card.dart';
+import 'absence_list_screen.dart';
 import 'details_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -49,70 +50,84 @@ class HomeScreenState extends State<HomeScreen> {
         backgroundColor: primaryColor,
         actions: isSelectionMode
             ? [
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.white),
-            onPressed: () {
-              _showRemoveConfirmationDialog(context);
-            },
-          ),
-        ]
-            : [],
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.white),
+                  onPressed: () {
+                    _showRemoveConfirmationDialog(context);
+                  },
+                ),
+              ]
+            : [
+                // IconButton(
+                //   icon: const Icon(Icons.save, color: Colors.white),
+                //   onPressed: () {
+                //     Navigator.push(
+                //       context,
+                //       MaterialPageRoute(
+                //         builder: (context) => const AbsenceListScreen(),
+                //       ),
+                //     );
+                //   },
+                // ),
+              ],
         leading: isSelectionMode
             ? IconButton(
-          icon: const Icon(Icons.close, color: Colors.white),
-          onPressed: () {
-            setState(() {
-              isSelectionMode = false;
-              selectedTeachers.clear();
-            });
-          },
-        )
-            : null,
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () {
+                  setState(() {
+                    isSelectionMode = false;
+                    selectedTeachers.clear();
+                  });
+                },
+              )
+            : Container(),
       ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: teacherBox == null
               ? const Center(
-            child: CircularProgressIndicator(
-              color: primaryColor,
-            ),
-          )
+                  child: CircularProgressIndicator(
+                    color: primaryColor,
+                  ),
+                )
               : ValueListenableBuilder<Box<Teacher>>(
-            valueListenable: teacherBox!.listenable(),
-            builder: (context, box, _) {
-              final teachers = box.values.toList();
-              return ListView.builder(
-                physics: const BouncingScrollPhysics(),
-                itemCount: teachers.length,
-                itemBuilder: (context, index) {
-                  return PersonCard<Teacher>(
-                    person: teachers[index],
-                    title: 'أ. ${teachers[index].name}',
-                    isSelected: selectedTeachers.contains(teachers[index]),
-                    onTap: (teacher) {
-                      if (isSelectionMode) {
-                        _toggleSelection(teacher);
-                      } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DetailsScreen(teacher: teacher),
-                          ),
+                  valueListenable: teacherBox!.listenable(),
+                  builder: (context, box, _) {
+                    final teachers = box.values.toList();
+                    return ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: teachers.length,
+                      itemBuilder: (context, index) {
+                        return PersonCard<Teacher>(
+                          person: teachers[index],
+                          title: 'أ. ${teachers[index].name}',
+                          isSelected:
+                              selectedTeachers.contains(teachers[index]),
+                          onTap: (teacher) {
+                            if (isSelectionMode) {
+                              _toggleSelection(teacher);
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      DetailsScreen(teacher: teacher),
+                                ),
+                              );
+                            }
+                          },
+                          onLongPress: () {
+                            setState(() {
+                              isSelectionMode = true;
+                              _toggleSelection(teachers[index]);
+                            });
+                          },
                         );
-                      }
-                    },
-                    onLongPress: () {
-                      setState(() {
-                        isSelectionMode = true;
-                        _toggleSelection(teachers[index]);
-                      });
-                    },
-                  );
-                },
-              );
-            },
-          ),
+                      },
+                    );
+                  },
+                ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -202,7 +217,8 @@ class HomeScreenState extends State<HomeScreen> {
         return AddDialog(
           title: 'إضافة معلم جديد',
           hintText: 'اسم المعلم',
-          existingNames: teacherBox!.values.map((teacher) => teacher.name).toList(),
+          existingNames:
+              teacherBox!.values.map((teacher) => teacher.name).toList(),
           onAdded: (newTeacherName) {
             _addTeacher(newTeacherName);
           },
@@ -214,7 +230,7 @@ class HomeScreenState extends State<HomeScreen> {
   void _addTeacher(String newTeacherName) {
     if (teacherBox != null && newTeacherName.isNotEmpty) {
       final exists =
-      teacherBox!.values.any((teacher) => teacher.name == newTeacherName);
+          teacherBox!.values.any((teacher) => teacher.name == newTeacherName);
       if (!exists) {
         final newTeacher = Teacher(newTeacherName);
         teacherBox!.add(newTeacher);

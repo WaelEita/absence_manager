@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../data/hive/model/student_model.dart';
 import '../../utils/colors.dart';
 import '../../utils/text_styles.dart';
 
