@@ -13,9 +13,7 @@ class TeacherAdapter extends TypeAdapter<Teacher> {
       for (var i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     var teacher = Teacher(fields[0] as String);
-    if (fields.containsKey(1)) {
-      teacher.students = (fields[1] as List).cast<Student>();
-    }
+    teacher.students = (fields[1] as List?)?.cast<Student>() ?? [];
     return teacher;
   }
 

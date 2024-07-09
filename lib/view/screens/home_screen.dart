@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../data/hive/hive_helper.dart';
-import '../data/hive/model/teacher_model.dart';
-import '../utils/colors.dart';
-import '../utils/text_styles.dart';
+import '../../data/hive/hive_helper.dart';
+import '../../data/hive/model/teacher_model.dart';
+import '../../utils/colors.dart';
+import '../../utils/text_styles.dart';
+import '../widgets/add_dialog.dart';
+import '../widgets/person_card.dart';
 import 'details_screen.dart';
-import 'widgets/add_dialog.dart';
-import 'widgets/person_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -107,9 +107,6 @@ class HomeScreenState extends State<HomeScreen> {
                         isSelectionMode = true;
                         _toggleSelection(teachers[index]);
                       });
-                    },
-                    onRemove: (teacher) {
-                      // This method will not be used directly here
                     },
                   );
                 },

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../data/hive/hive_helper.dart';
-import '../data/hive/model/student_model.dart';
-import '../data/hive/model/teacher_model.dart';
-import '../utils/colors.dart';
-import '../utils/text_styles.dart';
-import 'widgets/add_dialog.dart';
-import 'widgets/person_card.dart';
+import '../../data/hive/hive_helper.dart';
+import '../../data/hive/model/student_model.dart';
+import '../../data/hive/model/teacher_model.dart';
+import '../../utils/colors.dart';
+import '../../utils/text_styles.dart';
+import '../widgets/add_dialog.dart';
+import '../widgets/person_card.dart';
 
 class DetailsScreen extends StatefulWidget {
   final Teacher teacher;
@@ -22,6 +22,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
   Box<Student>? studentBox;
   bool isSelectionMode = false;
   Set<Student> selectedStudents = {};
+  bool showCounter = false;
 
   @override
   void initState() {
@@ -53,24 +54,24 @@ class _DetailsScreenState extends State<DetailsScreen> {
         backgroundColor: primaryColor,
         actions: isSelectionMode
             ? [
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.white),
-            onPressed: () {
-              _showRemoveConfirmationDialog(context);
-            },
-          ),
-        ]
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.white),
+                  onPressed: () {
+                    _showRemoveConfirmationDialog(context);
+                  },
+                ),
+              ]
             : [],
         leading: isSelectionMode
             ? IconButton(
-          icon: const Icon(Icons.close, color: Colors.white),
-          onPressed: () {
-            setState(() {
-              isSelectionMode = false;
-              selectedStudents.clear();
-            });
-          },
-        )
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () {
+                  setState(() {
+                    isSelectionMode = false;
+                    selectedStudents.clear();
+                  });
+                },
+              )
             : null,
       ),
       body: SafeArea(
@@ -78,41 +79,47 @@ class _DetailsScreenState extends State<DetailsScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: teacherBox == null || studentBox == null
               ? const Center(
-              child: CircularProgressIndicator(
-                color: primaryColor,
-              ))
+                  child: CircularProgressIndicator(
+                    color: primaryColor,
+                  ),
+                )
               : ValueListenableBuilder<Box<Teacher>>(
-            valueListenable: teacherBox!.listenable(),
-            builder: (context, box, _) {
-              final teacher = box.get(widget.teacher.key);
-              final students = teacher?.students ?? [];
-              return ListView.builder(
-                physics: const BouncingScrollPhysics(),
-                itemCount: students.length,
-                itemBuilder: (context, index) {
-                  return PersonCard<Student>(
-                    person: students[index],
-                    title: students[index].name,
-                    onRemove: _removeStudent,
-                    isSelected: selectedStudents.contains(students[index]),
-                    onTap: (student) {
-                      if (isSelectionMode) {
-                        _toggleSelection(student);
-                      } else {
-                        // handle normal tap behavior
-                      }
-                    },
-                    onLongPress: () {
-                      setState(() {
-                        isSelectionMode = true;
-                        _toggleSelection(students[index]);
-                      });
-                    },
-                  );
-                },
-              );
-            },
-          ),
+                  valueListenable: teacherBox!.listenable(),
+                  builder: (context, box, _) {
+                    final teacher = box.get(widget.teacher.key);
+                    final students = teacher?.students ?? [];
+                    return ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: students.length,
+                      itemBuilder: (context, index) {
+                        return PersonCard<Student>(
+                          person: students[index],
+                          title: students[index].name,
+                          counter: students[index].absences,
+                          // Show counter for students
+                          onRemove: _removeStudent,
+                          isSelected:
+                              selectedStudents.contains(students[index]),
+                          onIncrement: () => _increaseAbsence(students[index]),
+                          onDecrement: () => _decreaseAbsence(students[index]),
+                          onTap: (student) {
+                            if (isSelectionMode) {
+                              _toggleSelection(student);
+                            } else {
+                              // handle normal tap behavior
+                            }
+                          },
+                          onLongPress: () {
+                            setState(() {
+                              isSelectionMode = true;
+                              _toggleSelection(students[index]);
+                            });
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -144,11 +151,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: secondaryColor,
-          title: Text(
+          title: const Text(
             'تأكيد الحذف',
             textAlign: TextAlign.right,
           ),
-          content: Text(
+          content: const Text(
             'هل أنت متأكد أنك تريد حذف العناصر المحددة؟',
             textAlign: TextAlign.right,
           ),
@@ -201,7 +208,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
           title: 'إضافة طالب جديد',
           hintText: 'اسم الطالب',
           existingNames:
-          widget.teacher.students.map((student) => student.name).toList(),
+              widget.teacher.students.map((student) => student.name).toList(),
           onAdded: (newStudentName) {
             _addStudent(newStudentName);
           },
@@ -215,7 +222,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
       final teacher = teacherBox!.get(widget.teacher.key);
       if (teacher != null) {
         final exists =
-        teacher.students.any((student) => student.name == newStudentName);
+            teacher.students.any((student) => student.name == newStudentName);
         if (!exists) {
           final newStudent = Student(newStudentName);
           studentBox!.add(newStudent);
@@ -239,8 +246,42 @@ class _DetailsScreenState extends State<DetailsScreen> {
       if (teacher != null) {
         teacher.students.remove(student);
         studentBox!.delete(student.key);
+        teacher.save();
         setState(() {});
       }
     }
+  }
+
+  void _increaseAbsence(Student student) {
+    setState(() {
+      if (studentBox != null && studentBox!.isOpen) {
+        final savedStudent = studentBox!.get(student.key);
+        if (savedStudent != null) {
+          savedStudent.absences += 1;
+          savedStudent.save();
+        } else {
+          debugPrint('Student not found in box: ${student.key}');
+        }
+      } else {
+        debugPrint('Student box is not initialized or closed');
+      }
+    });
+  }
+
+  void _decreaseAbsence(Student student) {
+    setState(() {
+      if (studentBox != null && studentBox!.isOpen) {
+        final savedStudent = studentBox!.get(student.key);
+        if (savedStudent != null && savedStudent.absences > 0) {
+          savedStudent.absences -= 1;
+          savedStudent.save();
+        } else {
+          debugPrint(
+              'Student not found in box or absences <= 0: ${student.key}');
+        }
+      } else {
+        debugPrint('Student box is not initialized or closed');
+      }
+    });
   }
 }
