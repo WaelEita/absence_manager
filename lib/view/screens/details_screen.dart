@@ -45,7 +45,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
           child: Padding(
             padding: const EdgeInsets.only(right: 26),
             child: Text(
-              isSelectionMode ? 'تحديد عناصر' : 'تفاصيل المعلم',
+              isSelectionMode ? 'تحديد عناصر' : 'حلقة ${widget.teacher.name}',
               textAlign: TextAlign.center,
               style: title20.copyWith(color: Colors.white),
             ),
